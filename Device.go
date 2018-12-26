@@ -301,11 +301,9 @@ func (dev device) callAuthorizedMethod(endpoint string, method interface{}) (*ht
 		Adding namespaces and WS-Security headers
 	*/
 	soap.AddRootNamespaces(Xlmns)
-	log.Println(soap.StringIndent())
-
+	
 	soap.AddWSSecurity(dev.login, dev.password)
 
-	log.Println(soap.StringIndent())
 	/*
 		Sending request and returns the response
 	*/

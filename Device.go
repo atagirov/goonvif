@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -302,6 +303,7 @@ func (dev device) callAuthorizedMethod(endpoint string, method interface{}) (*ht
 	soap.AddRootNamespaces(Xlmns)
 	soap.AddWSSecurity(dev.login, dev.password)
 
+	log.Println(soap.StringIndent())
 	/*
 		Sending request and returns the response
 	*/

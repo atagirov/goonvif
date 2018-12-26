@@ -12,9 +12,9 @@ import (
 
 	"github.com/atagirov/goonvif/Device"
 	"github.com/atagirov/goonvif/networking"
+	"github.com/atagirov/gosoap"
 	"github.com/beevik/etree"
 	WS_Discovery "github.com/yakovlevdmv/WS-Discovery"
-	"github.com/yakovlevdmv/gosoap"
 )
 
 var Xlmns = map[string]string{

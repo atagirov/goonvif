@@ -12,10 +12,10 @@ import (
 
 	"github.com/atagirov/goonvif"
 	"github.com/atagirov/goonvif/networking"
+	"github.com/atagirov/gosoap"
 	"github.com/beevik/etree"
 	"github.com/gin-gonic/gin"
 	WS_Discovery "github.com/yakovlevdmv/WS-Discovery"
-	"github.com/yakovlevdmv/gosoap"
 )
 
 func RunApi() {

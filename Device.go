@@ -5,15 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/atagirov/goonvif/Device"
+	"github.com/atagirov/goonvif/gosoap"
 	"github.com/atagirov/goonvif/networking"
-	"github.com/atagirov/gosoap"
 	"github.com/beevik/etree"
 	WS_Discovery "github.com/yakovlevdmv/WS-Discovery"
 )
@@ -301,7 +300,7 @@ func (dev device) callAuthorizedMethod(endpoint string, method interface{}) (*ht
 		Adding namespaces and WS-Security headers
 	*/
 	soap.AddRootNamespaces(Xlmns)
-	
+
 	soap.AddWSSecurity(dev.login, dev.password)
 
 	/*

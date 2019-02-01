@@ -2,7 +2,6 @@ package goonvif
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -161,6 +160,22 @@ func (dev *device) getSupportedServices(resp *http.Response) {
 	//}
 }
 
+type onvifError struct {
+	Message string
+	Inner   error
+}
+
+func newOnvifError(message string, inner error) *onvifError {
+	return &onvifError{
+		Message: message,
+		Inner:   inner,
+	}
+}
+
+func (onvifError *onvifError) Error() string {
+	return onvifError.Message + ":" + onvifError.Inner.Error()
+}
+
 //NewDevice function construct a ONVIF Device entity
 func NewDevice(xaddr string) (*device, error) {
 	dev := new(device)
@@ -175,7 +190,7 @@ func NewDevice(xaddr string) (*device, error) {
 	//fmt.Println(readResponse(resp))
 	if err != nil || resp.StatusCode != http.StatusOK {
 		//panic(errors.New("camera is not available at " + xaddr + " or it does not support ONVIF services"))
-		return nil, errors.New("camera is not available at " + xaddr + " or it does not support ONVIF services")
+		return nil, newOnvifError("camera is not available at "+xaddr+" or it does not support ONVIF services", err)
 	}
 
 	dev.getSupportedServices(resp)

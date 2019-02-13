@@ -176,12 +176,21 @@ func (onvifError *onvifError) Error() string {
 	return onvifError.Message + ":" + onvifError.Inner.Error()
 }
 
-//NewDevice function construct a ONVIF Device entity
 func NewDevice(xaddr string) (*device, error) {
+	return NewDeviceWithUser(xaddr, "", "")
+}
+
+//NewDevice function construct a ONVIF Device entity
+func NewDeviceWithUser(xaddr, login, password string) (*device, error) {
 	dev := new(device)
 	dev.xaddr = xaddr
 	dev.endpoints = make(map[string]string)
 	dev.addEndpoint("Device", "http://"+xaddr+"/onvif/device_service")
+
+	if login != "" {
+		dev.login = login
+		dev.password = password
+	}
 
 	getCapabilities := Device.GetCapabilities{Category: "All"}
 

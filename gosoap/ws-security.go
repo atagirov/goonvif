@@ -55,13 +55,13 @@ type wsAuth struct {
    </Security>
 */
 
-func NewSecurity(username, passwd string) security {
+func NewSecurity(username, passwd string, timeDiff time.Duration) security {
 	/** Generating Nonce sequence **/
 	charsToGenerate := 32
 	charSet := gostrgen.Lower | gostrgen.Digit
 
 	nonceSeq, _ := gostrgen.RandGen(charsToGenerate, charSet, "", "")
-	currentTime := time.Now().UTC()
+	currentTime := time.Now().UTC().Add(timeDiff)
 	auth := security{
 		Auth: wsAuth{
 			Username: username,

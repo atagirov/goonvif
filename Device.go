@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/atagirov/goonvif/Device"
 	"github.com/atagirov/goonvif/gosoap"
@@ -74,6 +75,7 @@ type device struct {
 	xaddr    string
 	login    string
 	password string
+	timeDiff time.Duration
 
 	endpoints map[string]string
 	info      deviceInfo
@@ -187,6 +189,13 @@ func NewDeviceWithUser(xaddr, login, password string) (*device, error) {
 	dev.endpoints = make(map[string]string)
 	dev.addEndpoint("Device", "http://"+xaddr+"/onvif/device_service")
 
+	getSystemDateAndTime := Device.GetSystemDateAndTime{}
+	resp, err := dev.CallMethod(getSystemDateAndTime)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, newOnvifError("camera is not available at "+xaddr+" or it does not support ONVIF services", err)
+	}
+	dev.checkSystemDateAndTime(resp)
+
 	if login != "" {
 		dev.login = login
 		dev.password = password
@@ -194,7 +203,7 @@ func NewDeviceWithUser(xaddr, login, password string) (*device, error) {
 
 	getCapabilities := Device.GetCapabilities{Category: "All"}
 
-	resp, err := dev.CallMethod(getCapabilities)
+	resp, err = dev.CallMethod(getCapabilities)
 	//fmt.Println(resp.Request.Host)
 	//fmt.Println(readResponse(resp))
 	if err != nil || resp.StatusCode != http.StatusOK {
@@ -204,6 +213,34 @@ func NewDeviceWithUser(xaddr, login, password string) (*device, error) {
 
 	dev.getSupportedServices(resp)
 	return dev, nil
+}
+
+func (dev *device) checkSystemDateAndTime(resp *http.Response) {
+	currentTime := time.Now().UTC()
+
+	doc := etree.NewDocument()
+	data, _ := ioutil.ReadAll(resp.Body)
+	if err := doc.ReadFromBytes(data); err != nil {
+		return
+	}
+	utcDateTimeElement := doc.FindElement("./Envelope/Body/GetSystemDateAndTimeResponse/SystemDateAndTime/UTCDateTime")
+	if utcDateTimeElement == nil {
+		return
+	}
+
+	timeElement := utcDateTimeElement.FindElement("Time")
+	dateElement := utcDateTimeElement.FindElement("Date")
+
+	year, _ := strconv.Atoi(dateElement.SelectElement("Year").Text())
+	month, _ := strconv.Atoi(dateElement.SelectElement("Month").Text())
+	day, _ := strconv.Atoi(dateElement.SelectElement("Day").Text())
+	hour, _ := strconv.Atoi(timeElement.SelectElement("Hour").Text())
+	minute, _ := strconv.Atoi(timeElement.SelectElement("Minute").Text())
+	second, _ := strconv.Atoi(timeElement.SelectElement("Second").Text())
+
+	deviceTime := time.Date(year, time.Month(month), day, hour, minute, second, 0, time.UTC)
+
+	dev.timeDiff = deviceTime.Sub(currentTime)
 }
 
 func (dev *device) addEndpoint(Key, Value string) {
@@ -325,7 +362,7 @@ func (dev device) callAuthorizedMethod(endpoint string, method interface{}) (*ht
 	*/
 	soap.AddRootNamespaces(Xlmns)
 
-	soap.AddWSSecurity(dev.login, dev.password)
+	soap.AddWSSecurity(dev.login, dev.password, dev.timeDiff)
 
 	/*
 		Sending request and returns the response

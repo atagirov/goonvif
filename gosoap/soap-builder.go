@@ -3,6 +3,7 @@ package gosoap
 import (
 	"encoding/xml"
 	"log"
+	"time"
 
 	"github.com/beevik/etree"
 )
@@ -230,7 +231,7 @@ func buildSoapRoot() *etree.Document {
 	return doc
 }
 
-func (msg *SoapMessage) AddWSSecurity(username, password string) {
+func (msg *SoapMessage) AddWSSecurity(username, password string, timeDiff time.Duration) {
 	//doc := etree.NewDocument()
 	//if err := doc.ReadFromString(msg.String()); err != nil {
 	//	log.Println(err.Error())
@@ -239,7 +240,7 @@ func (msg *SoapMessage) AddWSSecurity(username, password string) {
 	/*
 		Getting an WS-Security struct representation
 	*/
-	auth := NewSecurity(username, password)
+	auth := NewSecurity(username, password, timeDiff)
 
 	/*
 		Adding WS-Security namespaces to root element of SOAP message

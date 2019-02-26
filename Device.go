@@ -4,7 +4,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -155,9 +157,15 @@ func (dev *device) getSupportedServices(resp *http.Response) {
 	}
 	services := doc.FindElements("./Envelope/Body/GetCapabilitiesResponse/Capabilities/*/XAddr")
 	for _, j := range services {
-		////fmt.Println(j.Text())
-		////fmt.Println(j.Parent().Tag)
-		dev.addEndpoint(j.Parent().Tag, j.Text())
+		key := j.Parent().Tag
+		value := j.Text()
+		uri, err := url.Parse(value)
+		if err != nil {
+			log.Println("invalid url on '" + key + "': " + value)
+			continue
+		}
+		uri.Host = dev.xaddr
+		dev.addEndpoint(key, uri.String())
 	}
 	//}
 }

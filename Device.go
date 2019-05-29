@@ -183,6 +183,9 @@ func newOnvifError(message string, inner error) *onvifError {
 }
 
 func (onvifError *onvifError) Error() string {
+	if onvifError.Inner == nil {
+		return onvifError.Message
+	}
 	return onvifError.Message + ":" + onvifError.Inner.Error()
 }
 
